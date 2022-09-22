@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Aplicación con Sockets</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+      integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+      integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center">Agregar productos</h1>
+      <div class="row">
+        <div class="col-10 m-auto">
+          <form
+            class="row bg-success text-white w-100 h-auto p-5 d-flex flex-column align-items-center justify-content-center"
+            onsubmit=""
+          >
+            <div class="mb-3">
+              <label for="name" class="form-label">Nombre producto</label>
+              <input
+                required="true"
+                type="text"
+                class="form-control"
+                id="name"
+                aria-describedby="emailHelp"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="price" class="form-label">Precio</label>
+              <input required type="number" class="form-control" id="price" />
+            </div>
+            <div class="mb-3">
+              <label for="url" class="form-label">Url Imagen</label>
+              <input required type="text" class="form-control" id="url" />
+            </div>
+            <div class="mb-3 form-check"></div>
+            <button id="agregar" type="submit" class="btn btn-warning">
+              Agregar
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <h1 class="text-center">Productos</h1>
+
+    <div class="container d-flex flex-column">
+      <div class="row">
+        <div class="col-10 m-auto">
+          <table class="table table-success table-striped">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Precio ($)</th>
+                <th class="text-center" scope="col">Imagen</th>
+              </tr>
+            </thead>
+            <tbody id="target">
+              <tr>
+                <th scope="row">1</th>
+                <td>Mark</td>
+                <td>Otto</td>
+                <td>@mdo</td>
+              </tr>
+              <tr>
+                <th scope="row">2</th>
+                <td>Jacob</td>
+                <td>Thornton</td>
+                <td>@fat</td>
+              </tr>
+              <tr>
+                <th scope="row">3</th>
+                <td colspan="2">Larry the Bird</td>
+                <td>@twitter</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <h1 class="text-center">Chat</h1>
+ <div class="container d-flex justify-content-center">
+    <div class="chat w-75 border border-primary my-1 p-2">
+        <div style="min-height: 200px" class="lista-mensajes h-auto  my-1"></div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">@</span>
+            <input
+            type="email"
+            class="form-control"
+            placeholder="Email"
+            aria-label="Username"
+            aria-describedby="basic-addon1"
+            />
+          </div>
+          <div class="input-group">
+              <span class="input-group-text btn btn-primary">Enviar</span>
+              <input
+              placeholder="Tu mensaje..."
+              class="form-control" 
+              aria-label="With textarea"
+              ></input>
+          </div>
+    </div>
+    
+ </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8"
+      crossorigin="anonymous"
+    ></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
