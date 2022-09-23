@@ -100,26 +100,36 @@
     <h1 class="text-center">Chat</h1>
  <div class="container d-flex justify-content-center">
     <div class="chat w-75 border border-primary my-1 p-2">
-        <div style="min-height: 200px" class="lista-mensajes h-auto  my-1"></div>
+        <div style="min-height: 200px; max-height:300px; overflow-y: scroll;" id="lista-mensajes" class="text-break h-auto  my-1">
+       
+        
+        </div>
+        <form class="w-100 d-flex flex-column justify-items-center align-items-center border-top border-primary p-2">
 
-        <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">@</span>
-            <input
-            type="email"
-            class="form-control"
-            placeholder="Email"
-            aria-label="Username"
-            aria-describedby="basic-addon1"
-            />
-          </div>
-          <div class="input-group">
-              <span class="input-group-text btn btn-primary">Enviar</span>
+          <div class="input-group mb-3 w-50">
+              <span class="input-group-text" id="basic-addon1">@</span>
               <input
-              placeholder="Tu mensaje..."
-              class="form-control" 
-              aria-label="With textarea"
-              ></input>
-          </div>
+              id="email"
+              type="email"
+              class="form-control"
+              placeholder="Email"
+              aria-label="Username"
+              aria-describedby="basic-addon1"
+              />
+            </div>
+            <div class="input-group w-50">
+                <span id="enviarChat" class="input-group-text btn btn-primary">Enviar</span>
+                <input 
+                id="mensaje"
+                placeholder="Tu mensaje..."
+                class="form-control" 
+                aria-label="With textarea"
+                ></input>
+            </div>
+           <div style="right: 15px; bottom: -874px" id="error-email" class="rounded d-none p-2 position-absolute right-50 w-50 bg-warning border border-warning">
+            <h5 id="texto-error" class="text-center" style="color:#7a5f0b"></h5>
+           </div>
+          </form>
     </div>
     
  </div>

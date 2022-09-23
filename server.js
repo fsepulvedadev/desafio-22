@@ -47,17 +47,43 @@ app.get("/", (req, res) => {
 app.get("/productos", (req, res) => {
   res.send(productos.getAllProducts());
 });
-const messages = [
-  { author: "Juan", text: "Hola que tal" },
-  { author: "Maria", text: "Bien y vos?" },
-  { author: "Juan", text: "Me alegra" },
+const fecha = new Date();
+const mensajes = [
+  {
+    author: "Juan",
+    text: "Hola que tal",
+    date: `${fecha.getDate()}/${fecha.getMonth()}/${fecha.getFullYear()}`,
+    hour: `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`,
+  },
+  {
+    author: "Maria",
+    text: "Bien y vos?",
+    date: `${fecha.getDate()}/${fecha.getMonth()}/${fecha.getFullYear()}`,
+    hour: `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`,
+  },
+  {
+    author: "Juan",
+    text: "Me alegra",
+    date: `${fecha.getDate()}/${fecha.getMonth()}/${fecha.getFullYear()}`,
+    hour: `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`,
+  },
 ];
 io.on("connection", (socket) => {
   console.log("se conecto un usuario");
   socket.emit("productos", productos.getAllProducts());
+  socket.emit("mensajes", mensajes);
   socket.on("new-product", (data) => {
     productos.addProduct(data);
     io.sockets.emit("productos", productos.getAllProducts());
+  });
+  socket.on("new-mensaje", (mensaje) => {
+    mensajes.push({
+      author: mensaje.author,
+      text: mensaje.text,
+      date: `${fecha.getDate()}/${fecha.getMonth()}/${fecha.getFullYear()}`,
+      hour: `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`,
+    });
+    io.sockets.emit("mensajes", mensajes);
   });
 });
 httpServer.listen(8080, () => console.log("servidor Levantado"));
