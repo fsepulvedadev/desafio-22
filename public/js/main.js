@@ -9,6 +9,7 @@ const priceForm = document.getElementById("price");
 const urlForm = document.getElementById("url");
 const errorEmail = document.getElementById("error-email");
 const errorText = document.getElementById("texto-error");
+const errorForm = document.getElementById("error-form");
 
 window.addEventListener("load", () => {
   botonForm.addEventListener("click", agregarProducto);
@@ -70,17 +71,24 @@ fetch("http://localhost:8080/productos")
 const agregarProducto = (e) => {
   e.preventDefault();
 
-  let newItem = {
-    name: nameForm.value,
-    price: priceForm.value,
-    url: urlForm.value,
-  };
+  if (!nameForm.value || !priceForm.value || !urlForm.value) {
+    errorForm.classList.remove("d-none");
+    return;
+  } else {
+    errorForm.classList.add("d-none");
 
-  socket.emit("new-product", newItem);
+    let newItem = {
+      name: nameForm.value,
+      price: priceForm.value,
+      url: urlForm.value,
+    };
 
-  nameForm.value = "";
-  priceForm.value = "";
-  urlForm.value = "";
+    socket.emit("new-product", newItem);
+
+    nameForm.value = "";
+    priceForm.value = "";
+    urlForm.value = "";
+  }
 };
 const enviarMensaje = (e) => {
   e.preventDefault();
