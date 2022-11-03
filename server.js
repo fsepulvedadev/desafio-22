@@ -5,38 +5,44 @@ const { Server: HttpServer } = require("http");
 const app = express();
 const httpServer = new HttpServer(app);
 const io = new IOServer(httpServer);
-const Api = require("./api.js");
+const { faker } = require("@faker-js/faker");
+const db = require("./config/firebase");
+const { collection, addDoc, getDocs } = require("firebase/firestore");
+const mensajesDB = collection(db, "mensajes");
+const normalizr = require("normalizr");
+const normalize = normalizr.normalize;
+const schema = normalizr.schema;
 
-const productos = new Api([
-  {
-    id: 1,
-    name: "Lavarropas samsung ",
-    price: 12000,
-    thumbnail:
-      "https://cdnlaol.laanonimaonline.com/web/images/productos/b/0000008000/8216.jpg",
-  },
-  {
-    id: 2,
-    name: "Monitor Daewoo",
-    price: 14000,
-    thumbnail:
-      "https://medias.musimundo.com/medias/00349000-142673-142673-01-142673-01.jpg-size515?context=bWFzdGVyfGltYWdlc3wzODIxMnxpbWFnZS9qcGVnfGgzNy9oNmQvMTAzODAzNTMyMDgzNTAvMDAzNDkwMDAtMTQyNjczLTE0MjY3M18wMS0xNDI2NzNfMDEuanBnX3NpemU1MTV8OWRlMjYwNTJiZjNkN2YyYjM4Njg5YTgyZDhlMmRmNzc5YWQ4ZjIxZGNkYjhjYTZjMmFmNjNiNWNjNzIwM2VlNg",
-  },
-  {
-    id: 3,
-    name: "Heladera Samsung",
-    price: 18000,
-    thumbnail:
-      "https://medias.musimundo.com/medias/00230125-177725-177725-01.png-177725-01.png-size515?context=bWFzdGVyfGltYWdlc3wyMzc1NjJ8aW1hZ2UvcG5nfGg0MS9oYWMvMTAzNzkwNjc5ODE4NTQvMDAyMzAxMjUtMTc3NzI1LTE3NzcyNV8wMS5wbmctMTc3NzI1XzAxLnBuZ19zaXplNTE1fGI2YzllYmU5YmQ3YTg5NzY4YTM3YTk2YjY0NzFiYzBkYmIwNDk2NDMyODU2ZjgyMGUyOTgwM2NhNTkwNjBlNGY",
-  },
-  {
-    id: 4,
-    name: "Heladera Samsung",
-    price: 18000,
-    thumbnail:
-      "15?context=bWFzdGVyfGltYWdlc3wyMzc1NjJ8aW1hZ2UvcG5nfGg0MS9oYWMvMTAzNzkwNjc5ODE4NTQvMDAyMzAxMjUtMTc3NzI1LTE3NzcyNV8wMS5wbmctMTc3NzI1XzAxLnBuZ19zaXplNTE1fGI2YzllYmU5YmQ3YTg5NzY4YTM3YTk2YjY0NzFiYzBkYmIwNDk2NDMyODU2ZjgyMGUyOTgwM2NhNTkwNjBlNGY",
-  },
-]);
+const text = new schema.Entity("texts");
+
+const author = new schema.Entity("author", {}, { idAttribute: "email" });
+const mensajeSchema = new schema.Entity("mensajes", {
+  id: "mensajes",
+  mensajes: [author],
+});
+
+faker.setLocale("es");
+
+const crearProducto = () => {
+  const newProducto = {
+    nombre: faker.commerce.productName(),
+    precio: faker.commerce.price(10, 5000, 0),
+    foto: "faker.image.business(640, 480)",
+    id: faker.database.mongodbObjectId(),
+  };
+  return newProducto;
+};
+
+const crearProductos = (cantidad) => {
+  let newListaProductos = [];
+  for (let i = 0; i < cantidad; i++) {
+    newListaProductos.push(crearProducto());
+  }
+
+  return newListaProductos;
+};
+
+const productos = crearProductos(5);
 
 app.use(express.static("./public"));
 app.use(express.json());
@@ -44,45 +50,50 @@ app.get("/", (req, res) => {
   res.sendFile("index.html");
 });
 
-app.get("/productos", (req, res) => {
-  res.send(productos.getAllProducts());
+app.get("/api/test-productos", (req, res) => {
+  res.send(productos);
 });
-const fecha = new Date();
-const mensajes = [
-  {
-    author: "Juan",
-    text: "Hola que tal",
-    date: `${fecha.getDate()}/${fecha.getMonth()}/${fecha.getFullYear()}`,
-    hour: `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`,
-  },
-  {
-    author: "Maria",
-    text: "Bien y vos?",
-    date: `${fecha.getDate()}/${fecha.getMonth()}/${fecha.getFullYear()}`,
-    hour: `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`,
-  },
-  {
-    author: "Juan",
-    text: "Me alegra",
-    date: `${fecha.getDate()}/${fecha.getMonth()}/${fecha.getFullYear()}`,
-    hour: `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`,
-  },
-];
-io.on("connection", (socket) => {
+let mensajes = [];
+io.on("connection", async (socket) => {
   console.log("se conecto un usuario");
-  socket.emit("productos", productos.getAllProducts());
-  socket.emit("mensajes", mensajes);
+  await getDocs(mensajesDB)
+    .then((docs) => {
+      mensajes = docs.docs.map((doc) => doc.data());
+    })
+    .catch((error) => console.log(error));
+  const dataNormalizada = normalize(mensajes, mensajeSchema);
+
+  socket.emit("productos", productos);
+  socket.emit("mensajes", dataNormalizada);
   socket.on("new-product", (data) => {
     productos.addProduct(data);
-    io.sockets.emit("productos", productos.getAllProducts());
+    io.sockets.emit("productos", productos);
   });
-  socket.on("new-mensaje", (mensaje) => {
-    mensajes.push({
-      author: mensaje.author,
+  socket.on("new-mensaje", async (mensaje) => {
+    console.log(mensaje);
+
+    const nuevoMsg = {
+      author: {
+        id: mensaje.author.id,
+        nombre: mensaje.author.nombre,
+        apellido: mensaje.author.apellido,
+        edad: mensaje.author.edad,
+        alias: mensaje.author.alias,
+        avatar: mensaje.author.avatar,
+      },
       text: mensaje.text,
-      date: `${fecha.getDate()}/${fecha.getMonth()}/${fecha.getFullYear()}`,
-      hour: `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`,
+    };
+
+    await addDoc(mensajesDB, nuevoMsg).then(async (data) => {
+      await getDocs(mensajesDB)
+        .then((docs) => {
+          mensajes = docs.docs.map((doc) => doc.data());
+        })
+        .catch((error) => console.log(error));
+
+      io.sockets.emit("mensajes", mensajes);
     });
+
     io.sockets.emit("mensajes", mensajes);
   });
 });

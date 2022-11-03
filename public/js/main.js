@@ -10,9 +10,16 @@ const urlForm = document.getElementById("url");
 const errorEmail = document.getElementById("error-email");
 const errorText = document.getElementById("texto-error");
 const errorForm = document.getElementById("error-form");
+const nombreChat = document.getElementById('nombreChat')
+const apellidoChat = document.getElementById('apellido')
+const edadChat = document.getElementById('edad')
+const aliasChat = document.getElementById('alias')
+const avatarChat = document.getElementById('avatar')
+const date = new Date()
+const fecha = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+const hora = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
 
 window.addEventListener("load", () => {
-  botonForm.addEventListener("click", agregarProducto);
   botonChat.addEventListener("click", enviarMensaje);
 });
 const socket = io();
@@ -20,15 +27,16 @@ const socket = io();
 console.log(target);
 
 const render = (data, tipo) => {
+  console.log(data)
   if (tipo === "chat") {
     var templateChat = Handlebars.compile(`
     {{#each mensajes}}
     {{#if yo}}
-    <div>De: <span class="fw-bold text-danger">{{author}} </span> <span style="color:#D27D2D">[{{date}} {{hour}}] :</span>
+    <div>De: <span class="fw-bold text-danger">{{author.nombre}} {{author.apellido}} </span> <span style="color:#D27D2D">[${fecha} ${hora}] :</span>
             <span class="fst-italic text-success">{{text}}</span> 
              </div>
              {{else}}
-             <div>De: <span class="fw-bold text-primary">{{author}} </span> <span style="color:#D27D2D">[{{date}} {{hour}}] :</span>
+             <div>De: <span class="fw-bold text-primary">{{author.nombre}} {{author.apellido}} </span> <span style="color:#D27D2D">[${fecha} ${hora}] :</span>
             <span class="fst-italic text-success">{{text}}</span> 
              </div>
              {{/if}}
@@ -42,13 +50,13 @@ const render = (data, tipo) => {
                   {{#each items}}
                   <tr>
                       <th scope="row">{{id}}</th>
-                    <td>{{name}}</td>
-                    <td>{{price}}</td>
+                    <td>{{nombre}}</td>
+                    <td>{{precio}}</td>
                     <td class="p-3 d-flex justify-content-center">
                         <img
           onerror="this.onerror=null;this.src='https://via.placeholder.com/250?text=No+se+pudo+cargar+la+imagen';"
           class="w-25 h-25"
-          src={{thumbnail}}
+          src={{foto}}
           alt="imagen de producto"
         />
                         </td>
@@ -61,7 +69,7 @@ const render = (data, tipo) => {
   }
 };
 
-fetch("http://localhost:8080/productos")
+fetch("http://localhost:8080/api/test-productos")
   .then((res) => res.json())
   .then((data) => {
     render(data);
@@ -110,7 +118,14 @@ const enviarMensaje = (e) => {
   }
 
   let newMensaje = {
-    author: userName.value,
+    author:{
+      id: userName.value,
+      nombre: nombreChat.value,
+      apellido: apellidoChat.value,
+      edad: edadChat.value,
+      alias: aliasChat.value,
+      avatar: avatarChat.value
+    } ,
     text: textoMensaje.value,
   };
 
