@@ -12,13 +12,18 @@ const mensajesDB = collection(db, "mensajes");
 const normalizr = require("normalizr");
 const normalize = normalizr.normalize;
 const schema = normalizr.schema;
+let mensajes = [];
 
-const text = new schema.Entity("texts");
-
-const author = new schema.Entity("author", {}, { idAttribute: "email" });
-const mensajeSchema = new schema.Entity("mensajes", {
-  id: "mensajes",
-  mensajes: [author],
+const authorSchema = new schema.Entity("author", {}, { idAttribute: "email" });
+const mensajeSchema = new schema.Entity(
+  "mensaje",
+  {
+    author: authorSchema,
+  },
+  { idAttribute: "_id" }
+);
+const mensajesSchema = new schema.Entity("mensajes", {
+  mensajes: [mensajeSchema],
 });
 
 faker.setLocale("es");
@@ -53,18 +58,24 @@ app.get("/", (req, res) => {
 app.get("/api/test-productos", (req, res) => {
   res.send(productos);
 });
-let mensajes = [];
 io.on("connection", async (socket) => {
   console.log("se conecto un usuario");
   await getDocs(mensajesDB)
     .then((docs) => {
       mensajes = docs.docs.map((doc) => doc.data());
+      const chatSchema = {
+        id: "chat",
+        mensajes: mensajes,
+      };
+
+      const dataNormalizada = normalize(chatSchema, mensajesSchema);
+
+      console.log(dataNormalizada);
+      socket.emit("mensajes", dataNormalizada);
     })
     .catch((error) => console.log(error));
-  const dataNormalizada = normalize(mensajes, mensajeSchema);
 
   socket.emit("productos", productos);
-  socket.emit("mensajes", dataNormalizada);
   socket.on("new-product", (data) => {
     productos.addProduct(data);
     io.sockets.emit("productos", productos);
@@ -88,10 +99,10 @@ io.on("connection", async (socket) => {
       await getDocs(mensajesDB)
         .then((docs) => {
           mensajes = docs.docs.map((doc) => doc.data());
+
+          io.sockets.emit("mensajes", mensajes);
         })
         .catch((error) => console.log(error));
-
-      io.sockets.emit("mensajes", mensajes);
     });
 
     io.sockets.emit("mensajes", mensajes);
